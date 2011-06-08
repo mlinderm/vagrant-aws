@@ -1,0 +1,3 @@
+module VagrantAWS
+  VERSION = "0.0.1"
+end
