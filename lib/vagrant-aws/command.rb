@@ -1,116 +1,145 @@
 require 'fog'
-require 'ruby-debug'
 
 module VagrantAWS
 	class AWSCommands < Vagrant::Command::GroupBase		
-		DEFAULT_DOTFILE = ".vagrantaws"
-		
 		register "aws", "Commands to interact with Amazon AWS (EC2)"
 
-		desc "up", "Creates the Vagrant environment on EC2"
-		method_options %w( ssh-key -S) => :string
-		method_options %w( ssh-user -x) => :string
-		method_options %w( identity-file -i) => :string
-		method_options %w( image -I ) => :string
-		def up
-			target_vms.each do |vm| 
-				server = create_server( vm.name, vm.env.config.aws, options )
-			
-				# Persist server information to the local store
-				local_data[:active] ||= {}
-				local_data[:active][vm.name.to_s] = {
-					:id => server.id,
-					:username => server.username,
-					:private_key_path => server.private_key_path
-				}
-				local_data.commit
-			end
+		def initialize(*args)
+			super
+			initialize_aws_environment(*args)
 		end
 
-		desc "destroy", "Destroy the environment, deleting the created virtual machines"
-		def destroy
-			target_vms.each do |vm|
-				if vm_created?(vm.name)
-					destroy_server( vm.name, vm.env.config.aws, options )
-					local_data[:active].delete(vm.name.to_s)
+
+		desc "up [NAME]", "Creates the Vagrant environment on Amazon AWS."
+		method_options :provision => true
+		def up(name=nil)
+			raise Errors::KeyNameNotSpecified if @env.config.aws.key_name.nil?
+
+			target_vms(name).each do |vm|				
+				if vm.created?
+					raise VagrantAWS::Errors::NotYetSupported
+					vm.env.ui.info I18n.t("vagrant.commands.up.vm_created")
+					#vm.start("provision.enabled" => options[:provision])
 				else
-					env.ui.info "VM not created"
+					vm.env.actions.run(:aws_up, "provision.enabled" => options[:provision])
 				end
 			end
 		end
 
-		protected
 
-		# Maintain distinct and non-conflicting local data store
-
-		def dotfile_path
-			env.root_path.join(DEFAULT_DOTFILE) rescue nil
-		end
-
-		def local_data
-			@local_data ||= Vagrant::DataStore.new(dotfile_path)
-		end
-
-		# Server creation and manipulation
-
-		def vm_created?(name)
-			local_data[:active] && local_data[:active].has_key?(name.to_s)
-		end
-
-		def server_definition(config, options)
-			{
-				:image_id  => options["image"] || config.image,
-				:groups    => config.security_groups,
-				:flavor_id => config.flavor,
-				:key_name  => options["ssh-key"] || config.ssh_key_name,
-				:username  => options["ssh-user"] || config.ssh_user,
-				:private_key_path  => options["identity-file"] || config.identity_file,
-				:availability_zone => config.availability_zone
-			}
-		end
-
-		def create_server(name, config, options)
-			connection = Fog::Compute.new(
-				:provider => 'AWS',
-				:aws_access_key_id     => config.aws_access_key_id, 
-				:aws_secret_access_key => config.aws_secret_access_key, 
-				:region => options["region"] || config.region
-			)
-		
-			server_def = server_definition(config, options)
-
-			ami = connection.images.get(server_def[:image_id])
-		
-			server = connection.servers.create(server_def)
-			
-			config.env.ui.info("Created EC2 Server -- Instance ID: #{server.id}")
-			config.env.ui.info("Waiting for server to become ready...")
-
-			connection.create_tags(server.id, { "name" => name })
-			server.wait_for { ready? }
-
-			config.env.ui.info("Server DNS: #{server.dns_name}")
-
-			# TODO: Bootstrap server node
-
-			server
-		end
-
-		def destroy_server(name, config, options)
-			connection = Fog::Compute.new(
-				:provider => 'AWS',
-				:aws_access_key_id     => config.aws_access_key_id, 
-				:aws_secret_access_key => config.aws_secret_access_key, 
-				:region => options["region"] || config.region
-			)
-			connection.servers.get(local_data[:active][name.to_s]['id']).destroy
-		end
-
-		class FogError < Vagrant::Errors::VagrantError
-			def initialize(message=nil, *args)
-				super
+		desc "destroy [NAME]", "Destroy the Vagrant AWS environment, terminating the created virtual machines."
+		def destroy(name=nil)
+			target_vms(name).each do |vm|
+				if vm.created?
+					vm.env.actions.run(:aws_destroy)
+				else
+					vm.env.ui.info I18n.t("vagrant.commands.common.vm_not_created")
+				end
 			end
 		end
+
+
+		desc "status", "Show the status of the current Vagrant AWS environment." 
+		def status
+			state = nil
+			results = target_vms.collect do |vm|
+				state = vm.created? ? vm.vm.state.to_s : 'not_created'
+				"#{vm.name.to_s.ljust(25)}#{state.gsub("_", " ")}"	
+			end
+			state = target_vms.length == 1 ? state : "listing"
+			@env.ui.info(I18n.t("vagrant.commands.status.output",
+                    :states  => results.join("\n"),
+                    :message => I18n.t("vagrant.plugins.aws.commands.status.#{state}")),
+                    :prefix  => false)
+		end
+
+
+		desc "ssh [NAME]", "SSH into the currently running Vagrant AWS environment."
+		method_options %w( execute -e ) => :string
+		def ssh(name=nil)
+			raise Errors::MultiVMTargetRequired, :command => "ssh" if target_vms.length > 1
+			
+			ssh_vm = target_vms.first
+			ssh_vm.env.actions.run(VagrantAWS::Action::PopulateSSH)
+
+			if options[:execute]
+				ssh_vm.ssh.execute do |ssh|
+          ssh_vm.env.ui.info I18n.t("vagrant.commands.ssh.execute", :command => options[:execute])
+          ssh.exec!(options[:execute]) do |channel, type, data|
+            ssh_vm.env.ui.info "#{data}"
+          end
+        end
+			else
+				raise Errors::VMNotCreatedError if !ssh_vm.created?
+        raise Errors::VMNotRunningError if !ssh_vm.vm.ready?
+        ssh_vm.ssh.connect 
+			end	
+		end
+
+
+		desc "provision [NAME]", "Rerun the provisioning scripts on a running VM."
+		def provision(name=nil)
+			target_vms(name).each do |vm|
+				if vm.created? && vm.vm.state == 'running'
+					vm.env.actions.run(:aws_provision)
+				else
+					vm.env.ui.info I18n.t("vagrant.commands.common.vm_not_created")
+				end
+      end
+    end
+		
+
+		desc "suspend [NAME]", "Suspend a running Vagrant AWS environment"
+		def suspend(name=nil)
+			target_vms(name).each do |vm|
+				if vm.created?
+					vm.env.actions.run(:aws_suspend)
+				else
+					vm.env.ui.info I18n.t("vagrant.commands.common.vm_not_created")
+				end
+			end	
+		end
+
+
+		desc "resume [NAME]", "Resume a suspended Vagrant AWS environment"
+		def resume(name=nil)
+			target_vms(name).each do |vm|
+				if vm.created?
+					vm.env.actions.run(:aws_resume)
+				else
+					vm.env.ui.info I18n.t("vagrant.commands.common.vm_not_created")
+				end
+			end	
+		end
+
+
+		desc "ssh_config [NAME]", "outputs .ssh/config valid syntax for connecting to this environment via ssh"
+		method_options %w{ host_name -h } => :string
+		def ssh_config(name=nil)
+			raise Errors::MultiVMTargetRequired, :command => "ssh_config" if target_vms.length > 1
+
+			ssh_vm = target_vms.first
+			ssh_vm.env.actions.run(VagrantAWS::Action::PopulateSSH)
+	
+			$stdout.puts(Vagrant::Util::TemplateRenderer.render("ssh_config", {
+        :host_key => options[:host] || "vagrant",
+        :ssh_host => ssh_vm.env.config.ssh.host,
+				:ssh_user => ssh_vm.env.config.ssh.username,
+				:ssh_port => ssh_vm.ssh.port,
+				:private_key_path => ssh_vm.env.config.ssh.private_key_path
+      }))
+		end
+
+		protected
+	
+		# Reinitialize "AWS" environment
+		def initialize_aws_environment(args, options, config)
+			raise Errors::CLIMissingEnvironment if !config[:env]
+			@env = VagrantAWS::Environment.new
+			@env.ui = config[:env].ui  # Touch up UI 
+			@env.load!
+		end
+
 
 	end	
 end

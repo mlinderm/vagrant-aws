@@ -1,0 +1,42 @@
+en:
+  vagrant:
+    plugins:
+      aws:
+        general:
+          getting_status: "Getting latest environment status..." 
+        errors:
+          not_yet_supported: This feature is not yet supported in Vagrant AWS.
+          key_name_not_specified: An AWS key name was not specified. Set `aws.key_name` in Vagrantfile. 
+          private_key_file_not_specified: |-
+            Private key file was not specified. Set `aws.private_key_file` to
+            point to key file associated with the specified AWS key name.
+          ebs_device_required: |-
+            %{command} requires an EBS-backed instance. Please Amazon AWS documentation for
+            more information about EBS vs. instance store backed instances.
+        commands:
+          status:
+            running: |-
+              The VM is running. To stop this VM, you can run `vagrant aws suspend` to
+              stop but not destroy this VM (you only pay for the backing EBS volume,
+              not the hourly EC2 server cost) or `vagrant aws destroy` to destroy
+              the VM entirely.
+            stopping: |-
+              The VM is in the process of stopping (suspending). To resume this VM
+              after it has completely stopped, simply run `vagrant aws resume`.
+            stopped: To resume this VM, simply run `vagrant resume`.
+            pending: The VM is in the process of resuming.
+            not_created: |-
+              The environment has not yet been created. Run `vagrant aws resume` to
+              create the environment.
+            listing: |-
+              This environment represents multiple VMs. The VMs are all listed
+              above with their current state. For more information about a specific
+              VM, run `vagrant aws status NAME`.
+        actions:
+          prepare_provisioners:
+            chef_not_detected: |-
+              %{binary} not detected. Bootstrapping %{binary} installation. This may
+              take a few minutes.
+            uploading_chef_resources: Uploading chef resources to VM.
+              
+            

@@ -3,13 +3,10 @@ module VagrantAWS
   # the `vagrant-aws` plugin.
   class Config < Vagrant::Config::Base
     configures :aws
-   
-		attr_accessor :aws_access_key_id
-		attr_accessor :aws_secret_access_key
-
-		attr_accessor :ssh_key_name
-		attr_accessor :identity_file
-		attr_accessor :ssh_user
+   	
+		attr_accessor :key_name
+		attr_writer :private_key_path
+		attr_accessor :username
 		attr_accessor :security_groups
 
 		attr_accessor :image
@@ -19,15 +16,20 @@ module VagrantAWS
 		attr_accessor :availability_zone
 
 		def initialize
-			@ssh_user = "root"
-			@security_groups = ["default"]
-			@region = "us-east-1"
-			@availability_zone = "us-east-1b"
-			@flavor = "t1.micro"
-
-			@aws_access_key_id = ENV['AWS_ACCESS_KEY_ID']
-			@aws_secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+			@security_groups   = ["default"]
+			@region            = "us-east-1"
+			@username          = "ubuntu"
+			@image             = "ami-2ec83147"
+			@flavor            = "t1.micro"
 		end
 
+		def private_key_path
+			@private_key_path.nil? ? nil : File.expand_path(@private_key_path)
+		end
+		
+
+		def validate(errors)
+			errors.add(I18n.t("vagrant.config.ssh.private_key_missing", :path => private_key_path)) if private_key_path && !File.exists?(private_key_path)
+		end
 	end
 end	
