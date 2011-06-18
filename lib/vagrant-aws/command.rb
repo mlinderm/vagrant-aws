@@ -135,11 +135,13 @@ module VagrantAWS
 		# Reinitialize "AWS" environment
 		def initialize_aws_environment(args, options, config)
 			raise Errors::CLIMissingEnvironment if !config[:env]
-			@env = VagrantAWS::Environment.new
-			@env.ui = config[:env].ui  # Touch up UI 
-			@env.load!
+			if config[:env].is_a?(VagrantAWS::Environment)
+				@env = config[:env]
+			else
+				@env = VagrantAWS::Environment.new
+				@env.ui = config[:env].ui  # Touch up UI 
+				@env.load!
+			end
 		end
-
-
 	end	
 end

@@ -13,6 +13,7 @@ en:
           ebs_device_required: |-
             %{command} requires an EBS-backed instance. Please Amazon AWS documentation for
             more information about EBS vs. instance store backed instances.
+          vm_create_failure: VM creation failed.
         commands:
           status:
             running: |-
@@ -33,6 +34,14 @@ en:
               above with their current state. For more information about a specific
               VM, run `vagrant aws status NAME`.
         actions:
+          create:
+            creating: "Creating VM ..."
+            created: |-
+              Created EC2 server %{id}. Waiting for server to become ready (this may take
+              a few minutes).
+            available: |-
+              Server available at %{dns}. Run `vagrant aws ssh_config` for more detailed
+              connection information.`
           prepare_provisioners:
             chef_not_detected: |-
               %{binary} not detected. Bootstrapping %{binary} installation. This may

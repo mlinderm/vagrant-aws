@@ -18,7 +18,9 @@ Gem::Specification.new do |s|
 	s.add_dependency "archive-tar-minitar", ">= 0.5.2"
 
   s.add_development_dependency "bundler", ">= 1.0.0"
-	
+	s.add_development_dependency "contest", "~> 0.1.3"
+	s.add_development_dependency "mocha", "~> 0.9.8"
+
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }

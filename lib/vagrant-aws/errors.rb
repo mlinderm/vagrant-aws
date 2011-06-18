@@ -20,5 +20,10 @@ module VagrantAWS
 		class EBSDeviceRequired < VagrantError
 			error_key(:ebs_device_required)
 		end
+
+		class VMCreateFailure < VagrantError
+			error_key(:vm_create_failure)
+		end
+
 	end
 end

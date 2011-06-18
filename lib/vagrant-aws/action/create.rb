@@ -6,7 +6,7 @@ module VagrantAWS
 			end
 
 			def call(env)
-				env.ui.info "Creating VM ..."
+				env.ui.info I18n.t("vagrant.plugins.aws.actions.create.creating")
 
 				server_def = server_definition(env["config"])
 
@@ -14,14 +14,14 @@ module VagrantAWS
 				ami = env["vm"].connection.images.get(server_def[:image_id])
 
 				env["vm"].vm = env["vm"].connection.servers.create(server_def)
-
-				env.ui.info("Created EC2 Server: #{env["vm"].vm.id}")
-				env.ui.info("Waiting for server to become ready... (this may take a few minutes)")
+				raise VagrantAWS::Errors::VMCreateFailure if env["vm"].vm.nil? || env["vm"].vm.id.nil?
 				
+				env.ui.info I18n.t("vagrant.plugins.aws.actions.create.created", :id => env["vm"].vm.id)
+								
 				env["vm"].vm.wait_for { ready? }
 				env["vm"].connection.create_tags(env["vm"].vm.id, { "name" => env["vm"].name })
 
-				env.ui.info("Server available at DNS: #{env["vm"].vm.dns_name}")
+				env.ui.info I18n.t("vagrant.plugins.aws.actions.create.available", :dns => env["vm"].vm.dns_name)
 
 				@app.call(env)
 			end

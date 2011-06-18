@@ -10,13 +10,13 @@ module VagrantAWS
 		def dotfile_path
 			root_path.join(DEFAULT_DOTFILE) rescue nil
 		end
-			
+		
 		def load!
 			super
 			
 			# Setup fog credential path
-			project_fog_path = root_path.join(FOGFILE)
-			Fog.credentials_path = File.expand_path(project_fog_path) if File.exist?(project_fog_path)
+			project_fog_path = root_path.join(FOGFILE) rescue nil
+			Fog.credentials_path = File.expand_path(fogfile_path) if project_fog_path && File.exist?(project_fog_path)
 
 			self
 		end
