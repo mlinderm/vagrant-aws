@@ -5,7 +5,7 @@ module VagrantAWS
     configures :aws
    	
 		attr_accessor :key_name
-		attr_writer :private_key_path
+		attr_writer   :private_key_path
 		attr_accessor :username
 		attr_accessor :security_groups
 
@@ -23,11 +23,14 @@ module VagrantAWS
 			@flavor            = "t1.micro"
 		end
 
+		def using?
+			return top.env.is_a?(VagrantAWS::Environment)
+		end
+
 		def private_key_path
 			@private_key_path.nil? ? nil : File.expand_path(@private_key_path)
 		end
 		
-
 		def validate(errors)
 			errors.add(I18n.t("vagrant.config.ssh.private_key_missing", :path => private_key_path)) if private_key_path && !File.exists?(private_key_path)
 		end

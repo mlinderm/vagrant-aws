@@ -10,7 +10,21 @@ module VagrantAWS
 		def dotfile_path
 			root_path.join(DEFAULT_DOTFILE) rescue nil
 		end
+	
+		def aws_home_path
+      home_path.join("aws")
+    end
+	
+		def boxes_path
+			aws_home_path.join("images")
+		end
+
+		def boxes
+      return parent.boxes if parent
+      @_boxes ||= VagrantAWS::BoxCollection.new(self)
+    end
 		
+
 		def load!
 			super
 			
@@ -21,7 +35,19 @@ module VagrantAWS
 			self
 		end
 
+		# Override to create "AWS" specific directories in 'home_dir'
+		def load_home_directory!
+			super
 
+			dirs = %w{ images }.map { |d| aws_home_path.join(d) }
+			dirs.each do |dir|
+				next if File.directory?(dir)
+				ui.info I18n.t("vagrant.general.creating_home_dir", :directory => dir)
+        FileUtils.mkdir_p(dir)
+      end	
+		end
+
+		# Override to create "AWS" VM
 		def load_vms!
 			result = {}
 

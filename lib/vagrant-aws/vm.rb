@@ -87,7 +87,7 @@ module VagrantAWS
 		def connection(region = nil)
 			@connection ||= Fog::Compute.new(
 				:provider => 'AWS',
-				:region   => region || env.config.aws.region
+				:region   => region || env.config.aws.region || nil
 			)
 		end
 	end

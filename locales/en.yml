@@ -5,7 +5,7 @@ en:
         general:
           getting_status: "Getting latest environment status..." 
         errors:
-          not_yet_supported: This feature is not yet supported in Vagrant AWS.
+          not_yet_supported: This feature is not yet supported in Vagrant AWS.      
           key_name_not_specified: An AWS key name was not specified. Set `aws.key_name` in Vagrantfile. 
           private_key_file_not_specified: |-
             Private key file was not specified. Set `aws.private_key_file` to
@@ -37,15 +37,25 @@ en:
           create:
             creating: "Creating VM ..."
             created: |-
-              Created EC2 server %{id}. Waiting for server to become ready (this may take
-              a few minutes).
+              Created EC2 server %{id}. Waiting for server to become ready 
+              (this may take a few minutes).
             available: |-
-              Server available at %{dns}. Run `vagrant aws ssh_config` for more detailed
-              connection information.`
+              Server available at %{dns}. 
+              Waiting for SSH to become available. When ready run `vagrant aws ssh_config`
+              for more detailed connection information.
           prepare_provisioners:
             chef_not_detected: |-
               %{binary} not detected. Bootstrapping %{binary} installation. This may
               take a few minutes.
             uploading_chef_resources: Uploading chef resources to VM.
+          create_image:
+            creating: |- 
+              Creating AWS AMI. This will not complete for a few minutes after this
+              command completes. The VMs will not be available during this period.
+          deregister_image:
+            deregistering:
+              Deregistering image %{image} with AWS.
+
+
               
             

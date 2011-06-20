@@ -1,6 +1,7 @@
 require 'fog'
 
 module VagrantAWS
+		
 	class AWSCommands < Vagrant::Command::GroupBase		
 		register "aws", "Commands to interact with Amazon AWS (EC2)"
 
@@ -57,7 +58,7 @@ module VagrantAWS
 		desc "ssh [NAME]", "SSH into the currently running Vagrant AWS environment."
 		method_options %w( execute -e ) => :string
 		def ssh(name=nil)
-			raise Errors::MultiVMTargetRequired, :command => "ssh" if target_vms.length > 1
+			raise Vagrant::Errors::MultiVMTargetRequired, :command => "ssh" if target_vms.length > 1
 			
 			ssh_vm = target_vms.first
 			ssh_vm.env.actions.run(VagrantAWS::Action::PopulateSSH)
@@ -70,8 +71,8 @@ module VagrantAWS
           end
         end
 			else
-				raise Errors::VMNotCreatedError if !ssh_vm.created?
-        raise Errors::VMNotRunningError if !ssh_vm.vm.ready?
+				raise Vagrant::Errors::VMNotCreatedError if !ssh_vm.created?
+        raise Vagrant::Errors::VMNotRunningError if !ssh_vm.vm.running?
         ssh_vm.ssh.connect 
 			end	
 		end
@@ -116,9 +117,10 @@ module VagrantAWS
 		desc "ssh_config [NAME]", "outputs .ssh/config valid syntax for connecting to this environment via ssh"
 		method_options %w{ host_name -h } => :string
 		def ssh_config(name=nil)
-			raise Errors::MultiVMTargetRequired, :command => "ssh_config" if target_vms.length > 1
-
+			raise Vagrant::Errors::MultiVMTargetRequired, :command => "ssh_config" if target_vms.length > 1
+	
 			ssh_vm = target_vms.first
+			raise Vagrant::Errors::VMNotCreatedError if !ssh_vm.created?
 			ssh_vm.env.actions.run(VagrantAWS::Action::PopulateSSH)
 	
 			$stdout.puts(Vagrant::Util::TemplateRenderer.render("ssh_config", {
@@ -130,6 +132,45 @@ module VagrantAWS
       }))
 		end
 
+
+		desc "box_create [NAME]", "create image box from running Vagrant AWS VM"
+		method_option :image_name, :aliases => '-f', :type => :string, :banner => "name of created image"
+		method_option :image_desc, :aliases => '-d', :type => :string, :banner => "description of created image" 
+		def box_create(name=nil)
+			raise Vagrant::Errors::MultiVMTargetRequired, :command => "box_create" if target_vms.length > 1
+			
+			ami_vm = target_vms.first		
+			ami_vm.env.actions.run(:aws_create_image, {
+				'package.output' => options[:image_name] || env.config.package.name,
+				'image.name' => options[:image_name] || "vagrantaws_#{rand(36**8).to_s(36)}",
+				'image.desc' => options[:image_desc] || "Image created by vagrant-aws"
+			})
+
+		end
+
+
+		desc "box_add NAME URI", "Add an AWS image box to the system"
+		def box_add(name, uri)
+			Box.add(env, name, uri)
+		end
+
+
+		desc "box_list", "list available AWS image boxes"
+		def box_list
+			boxes = env.boxes.sort
+			return env.ui.warn(I18n.t("vagrant.commands.box.no_installed_boxes"), :prefix => false) if boxes.empty?
+			boxes.each { |b| env.ui.info(b.name, :prefix => false) }
+		end
+
+
+		desc "box_remove NAME", "Remove named image box from system and optionally deregister image with AWS"
+		method_option :deregister, :aliases => '-d', :type => :boolean, :default => false, :banner => "deregister with AWS"
+		def box_remove(name)
+			b = env.boxes.find(name)
+      raise Vagrant::Errors::BoxNotFound, :name => name if !b
+      b.remove({ 'deregister' => options[:deregister] })
+    end
+			
 		protected
 	
 		# Reinitialize "AWS" environment

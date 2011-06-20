@@ -7,6 +7,8 @@ require 'vagrant-aws/config'
 require 'vagrant-aws/middleware'
 require 'vagrant-aws/command'
 require 'vagrant-aws/system'
+require 'vagrant-aws/box'
+require 'vagrant-aws/box_collection'
 
 # Add our custom translations to the load path
 I18n.load_path << File.expand_path("../../locales/en.yml", __FILE__)

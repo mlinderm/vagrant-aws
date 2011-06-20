@@ -11,7 +11,8 @@ module VagrantAWS
 				server_def = server_definition(env["config"])
 
 				# Verify AMI is valid (and in the future enable options specific to EBS-based AMIs)
-				ami = env["vm"].connection.images.get(server_def[:image_id])
+				image = env["vm"].connection.images.get(server_def[:image_id])
+				image.wait_for { state == 'available' }
 
 				env["vm"].vm = env["vm"].connection.servers.create(server_def)
 				raise VagrantAWS::Errors::VMCreateFailure if env["vm"].vm.nil? || env["vm"].vm.id.nil?
