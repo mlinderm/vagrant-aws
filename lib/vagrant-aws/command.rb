@@ -134,6 +134,7 @@ module VagrantAWS
 
 
 		desc "box_create [NAME]", "create image box from running Vagrant AWS VM"
+		method_option :register, :aliases => '-r', :type => :boolean, :default => true, :banner => "register with AWS" 
 		method_option :image_name, :aliases => '-f', :type => :string, :banner => "name of created image"
 		method_option :image_desc, :aliases => '-d', :type => :string, :banner => "description of created image" 
 		def box_create(name=nil)
@@ -142,6 +143,7 @@ module VagrantAWS
 			ami_vm = target_vms.first		
 			ami_vm.env.actions.run(:aws_create_image, {
 				'package.output' => options[:image_name] || env.config.package.name,
+				'image.register' => options[:register],
 				'image.name' => options[:image_name] || "vagrantaws_#{rand(36**8).to_s(36)}",
 				'image.desc' => options[:image_desc] || "Image created by vagrant-aws"
 			})
