@@ -32,7 +32,7 @@ per-environment basis (i.e., in each Vagrantfile) or in a single Vagrantfile in 
 With the above in place you should be ready instantiate your Vagrant environment on 
 Amazon AWS. See below for additional information on configuration, caveats, etc..
 
-## Configuration
+## Configuration and Image Boxes
 
 `vagrant-aws` defines a new configuration class for use in your Vagrantfile. An example
 usage (showing the defaults) would be:
@@ -46,6 +46,11 @@ usage (showing the defaults) would be:
 		config.aws.flavor = "t1.micro"
 	end
 
+Alternately you can work with "image boxes" using the `vagrant aws box_*` commands. These are 
+similar to Vagrant's native boxes, and have a similar API, but wrap AWS ami IDs. The major 
+difference is that box creation and removal can optionally reregister and deregister AMIs
+with AWS. Note that AMI creation is only supported for EBS-backed instances.
+
 ## Caveats
 
 `vagrant-aws` is "pre-alpha" and currently only supports creation, suspension, resumption
@@ -53,5 +58,4 @@ and descruction of the Vagrant environment. Provisioning should be supported for
 chef-server and chef-solo, but has only been tested with chef-solo and on an Ubuntu guest. 
 Only a subset of Vagrant features are supported. Currently port forwarding and shared 
 directories are not implemented, nor is host networking (although that is less relevant for AWS). 
-`vagrant-aws` in general has only been tested for a single VM, on OSX 10.6, with chef-solo.
-	
+`vagrant-aws` in general has only been tested for a single VM, on OSX 10.6, with chef-solo.	
