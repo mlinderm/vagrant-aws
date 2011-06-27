@@ -18,12 +18,20 @@ module VagrantAWS
 		def boxes_path
 			aws_home_path.join("images")
 		end
-
+	
 		def boxes
       return parent.boxes if parent
       @_boxes ||= VagrantAWS::BoxCollection.new(self)
     end
-		
+
+		def ssh_keys_path
+			aws_home_path.join("keys")
+		end
+
+		def ssh_keys
+			return parent.ssh_keys if parent
+			Dir.chdir(ssh_keys_path) { |unused| Dir.entries('.').select { |f| File.file?(f) } }
+		end
 
 		def load!
 			super
@@ -39,7 +47,7 @@ module VagrantAWS
 		def load_home_directory!
 			super
 
-			dirs = %w{ images }.map { |d| aws_home_path.join(d) }
+			dirs = %w{ images keys }.map { |d| aws_home_path.join(d) }
 			dirs.each do |dir|
 				next if File.directory?(dir)
 				ui.info I18n.t("vagrant.general.creating_home_dir", :directory => dir)

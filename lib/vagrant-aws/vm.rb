@@ -2,8 +2,8 @@ require 'fog'
 
 # Patch required by Vagrant::System
 module Fog
-	module AWS
-		class Compute
+	module Compute
+		class AWS
 			class Server < Fog::Model
 				def running?
 					state == "running"

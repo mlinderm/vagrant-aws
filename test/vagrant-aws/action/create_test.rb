@@ -3,8 +3,16 @@ require 'test_helper'
 class CreateActionTest < Test::Unit::TestCase
   setup do
     @app, @env = action_env
-		@env.env.vm = VagrantAWS::VM.new(:env => @env.env, :name => "default")
-    @middleware = VagrantAWS::Action::Create.new(@app, @env)
+
+		@env.env.vm = VagrantAWS::VM.new(:env => @env.env, :name => "default") 
+		@connection =  @env["vm"].connection  # We need to trigger the connection creation to load FOG models
+
+		@middleware = VagrantAWS::Action::Create.new(@app, @env)
+
+		# Setup FOG mocks
+		@env["config"].aws.key_name = "default"
+		@connection.data[:key_pairs] = { "notused" => { "keyName" => "default"} }
+		@connection.data[:images] = { "default" => { "imageId" => @env["config"].aws.image, "imageState" => 'available' } }
 	end
 
 	should "call the next app" do
@@ -16,13 +24,13 @@ class CreateActionTest < Test::Unit::TestCase
     @middleware.call(@env)
 		
 		assert_not_nil @env["vm"].vm
-		assert_instance_of Fog::AWS::Compute::Server, @env["vm"].vm
+		assert_instance_of Fog::Compute::AWS::Server, @env["vm"].vm
 		assert @env["vm"].vm.running?
 	end
 
 
 	should "mark environment erroneous and not continue chain on failure" do
-    Fog::AWS::Compute::Servers.any_instance.stubs(:create).returns(nil)
+    Fog::Compute::AWS::Servers.any_instance.stubs(:create).returns(nil)
 		@app.expects(:call).never
     assert_raises(VagrantAWS::Errors::VMCreateFailure) {
       @middleware.call(@env)

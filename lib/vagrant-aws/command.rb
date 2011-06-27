@@ -13,14 +13,10 @@ module VagrantAWS
 
 		desc "up [NAME]", "Creates the Vagrant environment on Amazon AWS."
 		method_options :provision => true
-		def up(name=nil)
-			raise Errors::KeyNameNotSpecified if @env.config.aws.key_name.nil?
-
+		def up(name=nil)	
 			target_vms(name).each do |vm|				
 				if vm.created?
-					raise VagrantAWS::Errors::NotYetSupported
 					vm.env.ui.info I18n.t("vagrant.commands.up.vm_created")
-					#vm.start("provision.enabled" => options[:provision])
 				else
 					vm.env.actions.run(:aws_up, "provision.enabled" => options[:provision])
 				end
@@ -170,7 +166,7 @@ module VagrantAWS
 		def box_remove(name)
 			b = env.boxes.find(name)
       raise Vagrant::Errors::BoxNotFound, :name => name if !b
-      b.remove({ 'deregister' => options[:deregister] })
+      b.remove({ 'image.deregister' => options[:deregister] })
     end
 			
 		protected

@@ -6,7 +6,14 @@ module VagrantAWS
 			end
 
 			def call(env)
-				raise VagrantAWS::Errors::PrivateKeyFileNotSpecified if env["config"].aws.private_key_path.nil?
+				@env = env
+
+				if @env["config"].aws.private_key_path.nil?
+					# See if we are using a key vagrant aws generated
+					@env["config"].aws.private_key_path = local_key_path(env["vm"].vm.key_name) if env["vm"].vm.key_name =~ /^vagrantaws_[0-9a-f]{12}/
+				end
+				
+				raise VagrantAWS::Errors::PrivateKeyFileNotSpecified if env["config"].aws.private_key_path.nil? || !File.exists?(env["config"].aws.private_key_path)
 
 				env["config"].ssh.host             = env["vm"].vm.dns_name
 				env["config"].ssh.username         = env["config"].aws.username
@@ -23,6 +30,10 @@ module VagrantAWS
 				@app.call(env)
 			end
 	
+			def local_key_path(name)
+				@env.env.ssh_keys_path.join(name)
+			end
+
 		end
 	end
 end

@@ -6,7 +6,7 @@ module VagrantAWS
 			end
 
 			def call(env)
-				if env['deregister']
+				if env['image.deregister']
 					image = Fog::Compute.new(:provider => 'AWS').images.new(load_image(env))	
 					env.ui.info I18n.t("vagrant.plugins.aws.actions.deregister_image.deregistering", :image => image.id)
 					image.reload

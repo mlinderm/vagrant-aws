@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 	s.add_dependency "vagrant", ">= 0.6.0"
 	s.add_dependency "fog"
 	s.add_dependency "archive-tar-minitar", ">= 0.5.2"
+	s.add_dependency "macaddr", "~> 1.0.0"
 
   s.add_development_dependency "bundler", ">= 1.0.0"
 	s.add_development_dependency "contest", "~> 0.1.3"

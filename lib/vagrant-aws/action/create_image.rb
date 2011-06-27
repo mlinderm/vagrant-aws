@@ -30,7 +30,7 @@ EOT
 				raise Vagrant::Errors::VMNotRunningError if !@env["vm"].vm.running?
 				raise VagrantAWS::Errors::EBSDeviceRequired, :command => "box_create" if @env["vm"].vm.root_device_type != "ebs"
 			
-				if @env["register"]
+				if @env["image.register"]
 					@env.ui.info I18n.t("vagrant.plugins.aws.actions.create_image.creating")
 					@image = @env["vm"].connection.create_image(@env["vm"].vm.id, @env['image.name'], @env['image.desc'])
 					@image = @env["vm"].connection.images.new({ :id => @image.body['imageId'] })

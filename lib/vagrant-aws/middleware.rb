@@ -1,5 +1,6 @@
 require 'vagrant-aws/action/create'
 require 'vagrant-aws/action/terminate'
+require 'vagrant-aws/action/create_sshkey'
 require 'vagrant-aws/action/populate_ssh'
 require 'vagrant-aws/action/prepare_provisioners'
 require 'vagrant-aws/action/suspend'
@@ -16,6 +17,7 @@ module VagrantAWS
 	end)
 
 	Vagrant::Action.register(:aws_up, Vagrant::Action::Builder.new do
+		use Action::CreateSSHKey
 		use Action::Create
 		use Vagrant::Action[:aws_provision]
 	end)

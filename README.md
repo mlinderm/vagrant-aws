@@ -19,10 +19,14 @@ specify your Amazon AWS credentials in a "fog" file. Create `~/.fog` with:
 		aws_access_key_id:  <YOUR ACCESS KEY>
 		aws_secret_access_key: <YOUR SECRET KEY>
 
-Additionally, although `vagrant-aws` has many useful defaults, you will need to specify your
-Amazon AWS key name and the path the associated private key. You can specify this on a
-per-environment basis (i.e., in each Vagrantfile) or in a single Vagrantfile in your
-`~/.vagrant` directory. In the latter case, create `~/.vagrant/Vagrantfile` with:
+If you already have an Amazon key pair (created when you signed-up, or
+someother time), you can specify the key name and the path the associated
+private key. Alternately, if no key name is specified, `vagrant-aws` will
+automatically create and register a key pair for you with the name
+`vagrant_<MAC ADDRESS>`. If you want to use your pre-existing key, you can
+specify the key name and path on a per-environment basis (i.e., in each
+Vagrantfile) or in a single Vagrantfile in your `~/.vagrant` directory. In the
+latter case, create `~/.vagrant/Vagrantfile` with:
 
 	Vagrant::Config.run do |config|
 		config.aws.key_name = "<KEY NAME>"

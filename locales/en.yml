@@ -55,6 +55,9 @@ en:
           deregister_image:
             deregistering:
               Deregistering image %{image} with AWS.
+          create_ssh_key:
+            created: |-
+              No key pairs specified. Created AWS key pair named %{name}.
 
 
               

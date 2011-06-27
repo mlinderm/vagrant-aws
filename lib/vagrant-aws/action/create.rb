@@ -6,6 +6,8 @@ module VagrantAWS
 			end
 
 			def call(env)
+				raise Errors::KeyNameNotSpecified if env["config"].aws.key_name.nil?
+				
 				env.ui.info I18n.t("vagrant.plugins.aws.actions.create.creating")
 
 				server_def = server_definition(env["config"])

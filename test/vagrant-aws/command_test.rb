@@ -6,13 +6,7 @@ class CommandTest < Test::Unit::TestCase
   end
 
 	context "up" do
-			
-		should "raise KeyNameNotSpecified if no key name" do
-			assert_raise(VagrantAWS::Errors::KeyNameNotSpecified) do
-				@env.cli("aws","up")
-			end
-		end
-
+				
 		should "run aws_up" do
 			@env.config.aws.key_name = "default"
 			@env.vms.values.each do |vm|
