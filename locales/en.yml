@@ -50,8 +50,8 @@ en:
             uploading_chef_resources: Uploading chef resources to VM.
           create_image:
             creating: |- 
-              Creating AWS AMI. This will not complete for a few minutes after this
-              command completes. The VMs will not be available during this period.
+              Creating AWS AMI. This make take a few minutes. The VM will not be available 
+              during this period.
           deregister_image:
             deregistering:
               Deregistering image %{image} with AWS.
