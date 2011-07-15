@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = VagrantAWS::VERSION
   s.authors     = ["Michael Linderman"]
   s.email       = ["michael.d.linderman@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "https://github.com/mlinderm/vagrant-aws"
   s.summary     = %q{A vagrant plugin for working with AWS}
   s.description = %q{A vagrant plugin for working with AWS}
 
