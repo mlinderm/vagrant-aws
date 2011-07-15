@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = "vagrant-aws"
 
 	s.add_dependency "vagrant", ">= 0.6.0"
-	s.add_dependency "fog"
+	s.add_dependency "fog", ">= 0.9.0"
 	s.add_dependency "archive-tar-minitar", ">= 0.5.2"
 	s.add_dependency "macaddr", "~> 1.0.0"
 
