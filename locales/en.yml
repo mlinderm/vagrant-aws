@@ -7,56 +7,56 @@ en:
         errors:
           not_yet_supported: This feature is not yet supported in Vagrant AWS.      
           key_name_not_specified: An AWS key name was not specified. Set `aws.key_name` in Vagrantfile. 
-          private_key_file_not_specified: |-
+          private_key_file_not_specified: |
             Private key file was not specified. Set `aws.private_key_file` to
             point to key file associated with the specified AWS key name.
-          ebs_device_required: |-
+          ebs_device_required: |
             %{command} requires an EBS-backed instance. Please Amazon AWS documentation for
             more information about EBS vs. instance store backed instances.
           vm_create_failure: VM creation failed.
         commands:
           status:
-            running: |-
+            running: |
               The VM is running. To stop this VM, you can run `vagrant aws suspend` to
               stop but not destroy this VM (you only pay for the backing EBS volume,
               not the hourly EC2 server cost) or `vagrant aws destroy` to destroy
               the VM entirely.
-            stopping: |-
+            stopping: |
               The VM is in the process of stopping (suspending). To resume this VM
               after it has completely stopped, simply run `vagrant aws resume`.
             stopped: To resume this VM, simply run `vagrant resume`.
             pending: The VM is in the process of resuming.
-            not_created: |-
+            not_created: |
               The environment has not yet been created. Run `vagrant aws resume` to
               create the environment.
-            listing: |-
+            listing: |
               This environment represents multiple VMs. The VMs are all listed
               above with their current state. For more information about a specific
               VM, run `vagrant aws status NAME`.
         actions:
           create:
             creating: "Creating VM ..."
-            created: |-
+            created: |
               Created EC2 server %{id}. Waiting for server to become ready 
               (this may take a few minutes).
-            available: |-
+            available: |
               Server available at %{dns}. 
               Waiting for SSH to become available. When ready run `vagrant aws ssh_config`
               for more detailed connection information.
           prepare_provisioners:
-            chef_not_detected: |-
+            chef_not_detected: |
               %{binary} not detected. Bootstrapping %{binary} installation. This may
               take a few minutes.
             uploading_chef_resources: Uploading chef resources to VM.
           create_image:
-            creating: |- 
+            creating: | 
               Creating AWS AMI. This make take a few minutes. The VM will not be available 
               during this period.
           deregister_image:
             deregistering:
               Deregistering image %{image} with AWS.
           create_ssh_key:
-            created: |-
+            created: |
               No key pairs specified. Created AWS key pair named %{name}.
 
 

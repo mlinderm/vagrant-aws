@@ -36,14 +36,14 @@ module VagrantAWS
 		end
 
 
-		desc "status", "Show the status of the current Vagrant AWS environment." 
-		def status
+		desc "status [NAME]", "Show the status of the current Vagrant AWS environment." 
+		def status(name=nil)
 			state = nil
-			results = target_vms.collect do |vm|
+			results = target_vms(name).collect do |vm|
 				state = vm.created? ? vm.vm.state.to_s : 'not_created'
 				"#{vm.name.to_s.ljust(25)}#{state.gsub("_", " ")}"	
 			end
-			state = target_vms.length == 1 ? state : "listing"
+			state = target_vms(name).length == 1 ? state : "listing"
 			@env.ui.info(I18n.t("vagrant.commands.status.output",
                     :states  => results.join("\n"),
                     :message => I18n.t("vagrant.plugins.aws.commands.status.#{state}")),
@@ -54,9 +54,9 @@ module VagrantAWS
 		desc "ssh [NAME]", "SSH into the currently running Vagrant AWS environment."
 		method_options %w( execute -e ) => :string
 		def ssh(name=nil)
-			raise Vagrant::Errors::MultiVMTargetRequired, :command => "ssh" if target_vms.length > 1
+			raise Vagrant::Errors::MultiVMTargetRequired, :command => "ssh" if target_vms(name).length > 1
 			
-			ssh_vm = target_vms.first
+			ssh_vm = target_vms(name).first
 			ssh_vm.env.actions.run(VagrantAWS::Action::PopulateSSH)
 
 			if options[:execute]
@@ -113,9 +113,9 @@ module VagrantAWS
 		desc "ssh_config [NAME]", "outputs .ssh/config valid syntax for connecting to this environment via ssh"
 		method_options %w{ host_name -h } => :string
 		def ssh_config(name=nil)
-			raise Vagrant::Errors::MultiVMTargetRequired, :command => "ssh_config" if target_vms.length > 1
+			raise Vagrant::Errors::MultiVMTargetRequired, :command => "ssh_config" if target_vms(name).length > 1
 	
-			ssh_vm = target_vms.first
+			ssh_vm = target_vms(name).first
 			raise Vagrant::Errors::VMNotCreatedError if !ssh_vm.created?
 			ssh_vm.env.actions.run(VagrantAWS::Action::PopulateSSH)
 	
@@ -134,9 +134,9 @@ module VagrantAWS
 		method_option :image_name, :aliases => '-f', :type => :string, :banner => "name of created image"
 		method_option :image_desc, :aliases => '-d', :type => :string, :banner => "description of created image" 
 		def box_create(name=nil)
-			raise Vagrant::Errors::MultiVMTargetRequired, :command => "box_create" if target_vms.length > 1
+			raise Vagrant::Errors::MultiVMTargetRequired, :command => "box_create" if target_vms(name).length > 1
 			
-			ami_vm = target_vms.first		
+			ami_vm = target_vms(name).first		
 			ami_vm.env.actions.run(:aws_create_image, {
 				'package.output' => options[:image_name] || env.config.package.name,
 				'image.register' => options[:register],

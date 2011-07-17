@@ -57,9 +57,11 @@ with AWS. Note that AMI creation is only supported for EBS-backed instances.
 
 ## Caveats
 
-`vagrant-aws` is "pre-alpha" and currently only supports creation, suspension, resumption
-and descruction of the Vagrant environment. Provisioning should be supported for shell,
-chef-server and chef-solo, but has only been tested with chef-solo and on an Ubuntu guest. 
-Only a subset of Vagrant features are supported. Currently port forwarding and shared 
-directories are not implemented, nor is host networking (although that is less relevant for AWS). 
-`vagrant-aws` in general has only been tested for a single VM, on OSX 10.6, with chef-solo.	
+`vagrant-aws` is "pre-alpha" and currently supports creation, suspension,
+resumption and descruction of the Vagrant environment along with basic box
+operations. Provisioning should be supported for shell, chef-server and
+chef-solo, but has only been tested with chef-solo and on an Ubuntu guest.
+Only a subset of Vagrant features are supported. Currently port forwarding and
+shared directories are not implemented, nor is host networking (although that
+is less relevant for AWS).  `vagrant-aws` in general has only been tested with
+ruby 1.9.2 on OSX 10.6, with chef-solo.	
