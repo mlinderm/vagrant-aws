@@ -2,7 +2,7 @@ module VagrantAWS
 
 	class Box < Vagrant::Box
 	
-		%w{ ovf_file repackage destroy }.each do |method|
+		%w{ repackage destroy }.each do |method|
 			undef_method(method)
 		end
 
