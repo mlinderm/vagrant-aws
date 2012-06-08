@@ -39,12 +39,17 @@ module VagrantAWS
 		# Override to create the child directories of aws/
 		def setup_home_path
 			super
-			puts "Creating AWS subdirectories"
+
 			AWS_SUBDIRS.each do |dir|
 				path = aws_home_path.join(dir)
-				puts "  #{path}"
 				next if File.directory?(path)
-				FileUtils.mkdir_p(path)
+				
+				begin
+					@logger.info("Creating: #{dir}")
+					FileUtils.mkdir_p(path)
+				rescue Errno::EACCES
+					raise Errors::HomeDirectoryNotAccessible, :home_path
+				end
 			end
 		end
 
