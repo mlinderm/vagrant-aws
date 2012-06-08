@@ -1,24 +1,5 @@
 require 'fileutils'
 
-# Path vagrant to not delete pre-existing package file (pull request submitted upstream)
-
-module Vagrant
-  class Action
-    module General
-      
-			class Package
-				def recover(env)
-          unless env["vagrant.error"].is_a?(Errors::PackageOutputExists)
-						# Cleanup any packaged files if the packaging failed at some point.
-						File.delete(tar_path) if File.exist?(tar_path)
-					end
-        end
-			end
-
-		end
-	end
-end
-
 module VagrantAWS
 	class Action
 		class CreateImage
