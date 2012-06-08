@@ -20,8 +20,7 @@ module VagrantAWS
 		end
 	
 		def boxes
-      return parent.boxes if parent
-      @_boxes ||= VagrantAWS::BoxCollection.new(self)
+      @_boxes ||= Vagrant::BoxCollection.new(boxes_path, action_runner)
     end
 
 		def ssh_keys_path
@@ -29,7 +28,6 @@ module VagrantAWS
 		end
 
 		def ssh_keys
-			return parent.ssh_keys if parent
 			Dir.chdir(ssh_keys_path) { |unused| Dir.entries('.').select { |f| File.file?(f) } }
 		end
 
