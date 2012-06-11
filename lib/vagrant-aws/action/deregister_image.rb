@@ -1,5 +1,5 @@
 module VagrantAWS
-	class Action
+	module Action
 		class DeregisterImage
 			def initialize(app, env)
 				@app = app

@@ -5,7 +5,6 @@ class CreateImageTest < Test::Unit::TestCase
 	setup do
 		@app, @env = action_env
 		
-		@env.env.vm = VagrantAWS::VM.new(:env => @env.env, :name => "default")
 		@middleware = VagrantAWS::Action::CreateImage.new(@app, @env)
 		
 		@env["vm"].expects(:created?).returns(true)

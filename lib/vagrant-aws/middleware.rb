@@ -10,44 +10,44 @@ require 'vagrant-aws/action/deregister_image'
 
 module VagrantAWS
 
-	Vagrant::Action.register(:aws_provision, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_provision, Vagrant::Action::Builder.new do
 		use Action::PopulateSSH
 		use Action::PrepareProvisioners
-		use Vagrant::Action[:provision]
-	end)
+		use Vagrant.actions[:provision]
+	end
 
-	Vagrant::Action.register(:aws_up, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_up, Vagrant::Action::Builder.new do
 		use Action::CreateSSHKey
 		use Action::Create
-		use Vagrant::Action[:aws_provision]
-	end)
+		use Vagrant.actions[:aws_provision]
+	end
 
-	Vagrant::Action.register(:aws_destroy, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_destroy, Vagrant::Action::Builder.new do
 		use Action::Terminate
-	end)
+	end
 
-	Vagrant::Action.register(:aws_suspend, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_suspend, Vagrant::Action::Builder.new do
 		use Action::Suspend
-	end)
+	end
 
-	Vagrant::Action.register(:aws_resume, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_resume, Vagrant::Action::Builder.new do
 		use Action::Resume
-	end)
+	end
 
-	Vagrant::Action.register(:aws_create_image, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_create_image, Vagrant::Action::Builder.new do
 		use Action::CreateImage
 		use Vagrant::Action::VM::Package
-	end)
+	end
 
-	Vagrant::Action.register(:aws_add_image, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_add_image, Vagrant::Action::Builder.new do
 		use Vagrant::Action::Box::Download
     use Vagrant::Action::Box::Unpackage
-	end)
+	end
 
-	Vagrant::Action.register(:aws_remove_image, Vagrant::Action::Builder.new do
+	Vagrant.actions.register :aws_remove_image, Vagrant::Action::Builder.new do
 		use Action::DeregisterImage
     use Vagrant::Action::Box::Destroy
-	end)
+	end
 
 
 end

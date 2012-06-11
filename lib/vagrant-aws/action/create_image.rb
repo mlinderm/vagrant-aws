@@ -1,26 +1,7 @@
 require 'fileutils'
 
-# Path vagrant to not delete pre-existing package file (pull request submitted upstream)
-
-module Vagrant
-  class Action
-    module General
-      
-			class Package
-				def recover(env)
-          unless env["vagrant.error"].is_a?(Errors::PackageOutputExists)
-						# Cleanup any packaged files if the packaging failed at some point.
-						File.delete(tar_path) if File.exist?(tar_path)
-					end
-        end
-			end
-
-		end
-	end
-end
-
 module VagrantAWS
-	class Action
+	module Action
 		class CreateImage
 			include Vagrant::Util
 
@@ -50,10 +31,11 @@ EOT
 				raise VagrantAWS::Errors::EBSDeviceRequired, :command => "box_create" if @env["image.register"] and @env["vm"].vm.root_device_type != "ebs"
 			
 				if @env["image.register"]
-					@env.ui.info I18n.t("vagrant.plugins.aws.actions.create_image.creating")
+					@env["ui"].info I18n.t("vagrant.plugins.aws.actions.create_image.creating")
 					@image = @env["vm"].connection.create_image(@env["vm"].vm.id, @env['image.name'], @env['image.desc'])
+
 					@image = @env["vm"].connection.images.new({ :id => @image.body['imageId'] })
-					@image.wait_for { state == "available" }
+					@image.wait_for { ready? }
 				else
 					@image = @env["vm"].connection.images.get(@env["vm"].vm.image_id)
 				end
@@ -68,7 +50,7 @@ EOT
 
 			def recover(env)
 				if env["image.register"]
-					env.ui.info I18n.t("vagrant.plugins.aws.actions.deregister_image.deregistering", :image => @image.id)
+					env["ui"].info I18n.t("vagrant.plugins.aws.actions.deregister_image.deregistering", :image => @image.id)
 					@image.deregister(!@image.root_device_name.nil?)  # Don't try to delete backing snapshot if it was not created
 				end
 				cleanup_temp_dir
@@ -81,8 +63,8 @@ EOT
 			end
 
 			def setup_temp_dir
-				@env.ui.info I18n.t("vagrant.actions.vm.export.create_dir")
-				@temp_dir = @env["export.temp_dir"] = @env.env.tmp_path.join(Time.now.to_i.to_s)
+				@env["ui"].info I18n.t("vagrant.actions.vm.export.create_dir")
+				@temp_dir = @env["export.temp_dir"] = @env["vm"].env.tmp_path.join(Time.now.to_i.to_s)
 				FileUtils.mkpath(@env["export.temp_dir"])
 			end
 		
@@ -91,7 +73,7 @@ EOT
 				File.open(File.join(@env["export.temp_dir"], 'Vagrantfile'), "w") do |f|
 					f.write(TemplateRenderer.render_string(PACKAGE_VAGRANTFILE, {
 						:image => @image.id,
-						:region => @env["config"].aws.region
+						:region => @env["vm"].config.aws.region
 					}))
 				end
 				File.open(File.join(@env["export.temp_dir"], 'image.json'), "w") do |f|

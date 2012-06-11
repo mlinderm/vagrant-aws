@@ -8,9 +8,9 @@ class CommandTest < Test::Unit::TestCase
 	context "up" do
 				
 		should "run aws_up" do
-			@env.config.aws.key_name = "default"
+      @env.config.for_vm(:default).aws.key_name = "default"
 			@env.vms.values.each do |vm|
-				vm.env.actions.expects(:run).with(:aws_up, {'provision.enabled' => true}).once
+				vm.env.action_runner.expects(:run).with(:aws_up, {'provision.enabled' => true}).once
 			end
 			@env.cli("aws","up")
 		end

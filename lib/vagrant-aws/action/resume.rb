@@ -1,5 +1,5 @@
 module VagrantAWS
-	class Action
+	module Action
 		class Resume
 			def initialize(app, env)
 				@app = app
