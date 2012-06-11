@@ -1,7 +1,7 @@
 require 'archive/tar/minitar'
 
 module VagrantAWS
-	class Action
+	module Action
 		class PrepareProvisioners
 			def initialize(app, env)
 				@app = app

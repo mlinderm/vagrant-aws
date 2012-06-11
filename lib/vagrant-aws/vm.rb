@@ -3,11 +3,9 @@ require 'fog'
 # Patch required by Vagrant::System
 module Fog
 	module Compute
-		class AWS
-			class Server < Fog::Model
-				def running?
-					state == "running"
-				end
+		class Server < Fog::Model
+			def running?
+				state == "running"
 			end
 		end
 	end
@@ -27,45 +25,19 @@ module VagrantAWS
 				env.ui.info I18n.t("vagrant.plugins.aws.general.getting_status") if env
 				
 				vm = Fog::Compute.new(:provider => 'AWS', :region => desc['region']).servers.get(desc['id'])
-				my_vm = new(:vm => vm, :env => env, :name => name)
+				pp vm
+        my_vm = new(name, env)
+        my_vm.vm = vm
 		
 				# Recover key configuration values from data store not available from AWS directly
 				unless my_vm.env.nil?
-					my_vm.env.config.aws.region = desc['region']
+					my_vm.config.aws.region = desc['region']
 				end
 				
 				my_vm
       end
     end
-				
-		# Copied from Vagrant VM, but modified to generate a VagrantAWS::Environment
-		def initialize(opts=nil)
-      defaults = { :vm => nil, :env => nil, :name => nil }
-
-      opts = defaults.merge(opts || {})
-
-      @vm = opts[:vm]
-      @connection = @vm.connection if @vm  # Initialize connection from intialized server
-			
-			@name = opts[:name]
-
-      if !opts[:env].nil?
-        # We have an environment, so we create a new child environment
-        # specifically for this VM. This step will load any custom
-        # config and such.
-        @env = VagrantAWS::Environment.new({
-          :cwd => opts[:env].cwd,
-          :parent => opts[:env],
-          :vm => self
-        }).load!
-
-        # Load the associated system.
-        load_system!
-      end
-
-      @loaded_system_distro = false
-    end
-	
+					
 		def vm=(value)
       @vm = value
       env.local_data[:active] ||= {}
@@ -87,8 +59,9 @@ module VagrantAWS
 		def connection(region = nil)
 			@connection ||= Fog::Compute.new(
 				:provider => 'AWS',
-				:region   => region || env.config.aws.region || nil
+				:region   => region || config.aws.region || nil
 			)
+
 		end
 	end
 end

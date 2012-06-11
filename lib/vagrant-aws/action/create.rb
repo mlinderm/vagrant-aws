@@ -1,16 +1,16 @@
 module VagrantAWS
-	class Action
+	module Action
 		class Create
 			def initialize(app, env)
 				@app = app
 			end
 
 			def call(env)
-				raise Errors::KeyNameNotSpecified if env["config"].aws.key_name.nil?
+				raise Errors::KeyNameNotSpecified if env["vm"].config.aws.key_name.nil?
 				
-				env.ui.info I18n.t("vagrant.plugins.aws.actions.create.creating")
+				env["ui"].info I18n.t("vagrant.plugins.aws.actions.create.creating")
 
-				server_def = server_definition(env["config"])
+				server_def = server_definition(env["vm"].config)
 
 				# Verify AMI is valid (and in the future enable options specific to EBS-based AMIs)
 				image = env["vm"].connection.images.get(server_def[:image_id])
@@ -19,12 +19,12 @@ module VagrantAWS
 				env["vm"].vm = env["vm"].connection.servers.create(server_def)
 				raise VagrantAWS::Errors::VMCreateFailure if env["vm"].vm.nil? || env["vm"].vm.id.nil?
 				
-				env.ui.info I18n.t("vagrant.plugins.aws.actions.create.created", :id => env["vm"].vm.id)
+				env["ui"].info I18n.t("vagrant.plugins.aws.actions.create.created", :id => env["vm"].vm.id)
 								
 				env["vm"].vm.wait_for { ready? }
 				env["vm"].connection.create_tags(env["vm"].vm.id, { "name" => env["vm"].name })
 
-				env.ui.info I18n.t("vagrant.plugins.aws.actions.create.available", :dns => env["vm"].vm.dns_name)
+				env["ui"].info I18n.t("vagrant.plugins.aws.actions.create.available", :dns => env["vm"].vm.dns_name)
 
 				@app.call(env)
 			end

@@ -22,10 +22,6 @@ module VagrantAWS
 			@flavor            = "t1.micro"
 		end
 
-		def using?
-			return top.env.is_a?(VagrantAWS::Environment)
-		end
-
 		def private_key_path
 			@private_key_path.nil? ? nil : File.expand_path(@private_key_path)
 		end

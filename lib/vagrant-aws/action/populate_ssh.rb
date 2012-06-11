@@ -1,5 +1,5 @@
 module VagrantAWS
-	class Action
+	module Action
 		class PopulateSSH
 			def initialize(app, env)
 				@app = app

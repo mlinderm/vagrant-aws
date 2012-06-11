@@ -1,5 +1,5 @@
 module VagrantAWS
-	class Action
+	module Action
 		class Suspend
 			def initialize(app, env)
 				@app = app

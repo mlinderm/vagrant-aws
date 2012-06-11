@@ -4,15 +4,14 @@ class CreateActionTest < Test::Unit::TestCase
   setup do
     @app, @env = action_env
 
-		@env.env.vm = VagrantAWS::VM.new(:env => @env.env, :name => "default") 
 		@connection =  @env["vm"].connection  # We need to trigger the connection creation to load FOG models
 
 		@middleware = VagrantAWS::Action::Create.new(@app, @env)
 
 		# Setup FOG mocks
-		@env["config"].aws.key_name = "default"
+		@env["vm"].config.aws.key_name = "default"
 		@connection.data[:key_pairs] = { "notused" => { "keyName" => "default"} }
-		@connection.data[:images] = { "default" => { "imageId" => @env["config"].aws.image, "imageState" => 'available' } }
+		@connection.data[:images] = { "default" => { "imageId" => @env["vm"].config.aws.image, "imageState" => 'available' } }
 	end
 
 	should "call the next app" do
@@ -44,19 +43,19 @@ class CreateActionTest < Test::Unit::TestCase
 
     should "not run the destroy action on recover if error is a VagrantError" do
       @env["vagrant.error"] = Vagrant::Errors::VMImportFailure.new
-      @env.env.actions.expects(:run).never
+      @env["actions"].expects(:run).never
       @middleware.recover(@env)
     end
 
     should "not run the destroy action on recover if VM is not created" do
-      @env.env.vm.stubs(:created?).returns(false)
-      @env.env.actions.expects(:run).never
+      @env["vm"].stubs(:created?).returns(false)
+      @env["actions"].expects(:run).never
       @middleware.recover(@env)
     end
 
     should "run the destroy action on recover" do
-      @env.env.vm.stubs(:created?).returns(true)
-      @env.env.actions.expects(:run).with(:aws_destroy).once
+      @env["vm"].stubs(:created?).returns(true)
+      @env["actions"].expects(:run).with(:aws_destroy).once
       @middleware.recover(@env)
     end
   end

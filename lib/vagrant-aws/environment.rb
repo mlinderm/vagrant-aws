@@ -75,10 +75,10 @@ module VagrantAWS
 
 			# For any VMs which aren't created, create a blank VM instance for
 			# them
-			all_keys = config.vm.defined_vm_keys
+			all_keys = config.vms
 			all_keys = [DEFAULT_VM] if all_keys.empty?
 			all_keys.each do |name|
-				result[name] = VagrantAWS::VM.new(:name => name, :env => self) if !result.has_key?(name)
+				result[name] = VagrantAWS::VM.new(name, self, config.for_vm(name)) if !result.has_key?(name)
 			end
 
 			result
